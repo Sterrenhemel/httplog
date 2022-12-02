@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"github.com/MadAppGang/httplog"
 	"github.com/Sterrenhemel/common/logs"
 	"github.com/Sterrenhemel/common/tracex"
 	"github.com/gin-gonic/gin"
+	"os"
+	"strconv"
 
 	"moul.io/http2curl"
 	"net/http"
@@ -42,5 +45,15 @@ func main() {
 	r.Use(LoggerMiddleware())
 	r.NoRoute(anyHandler)
 
-	r.Run(":3333")
+	portInt := int64(8080)
+	port := os.Getenv("PORT")
+	if port != "" {
+		var err error
+		portInt, err = strconv.ParseInt(port, 10, 64)
+		if err != nil {
+			portInt = 8080
+		}
+	}
+
+	r.Run(fmt.Sprintf(":%d", portInt))
 }
