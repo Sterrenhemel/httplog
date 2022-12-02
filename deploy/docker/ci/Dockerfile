@@ -10,8 +10,8 @@ ENV GO111MODULE=on \
 
 WORKDIR /usr/src/app
 
-ADD src/go.mod .
-ADD src/go.sum .
+ADD go.mod .
+ADD go.sum .
 RUN go mod download
 
 #
