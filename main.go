@@ -60,10 +60,14 @@ var anyHandler = func(c *gin.Context) {
 
 }
 
+var BuildTime = ""
+
 func main() {
 	tracex.Init()
 	ctx := context.Background()
 	defer tracex.ShutDown(ctx)
+
+	logs.CtxInfo(ctx, "BuildTime:%s", BuildTime)
 	// setup routes
 	r := gin.New()
 	r.Use(LoggerMiddleware())
