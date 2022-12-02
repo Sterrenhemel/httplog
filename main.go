@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/MadAppGang/httplog"
 	"github.com/Sterrenhemel/common/logs"
 	"github.com/Sterrenhemel/common/tracex"
 	"github.com/gin-gonic/gin"
@@ -15,21 +14,6 @@ import (
 	"moul.io/http2curl"
 	"net/http"
 )
-
-// httplog.ResponseWriter is not fully compatible with gin.ResponseWriter
-func LoggerMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		l := httplog.Logger(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-			// gin uses wrapped ResponseWriter, we don't want to replace it
-			// as gin use custom middleware approach with Next() method and context
-			c.Next()
-			// set result for ResponseWriter manually
-			rwr, _ := rw.(httplog.ResponseWriter)
-			rwr.Set(c.Writer.Status(), c.Writer.Size())
-		}))
-		l.ServeHTTP(c.Writer, c.Request)
-	}
-}
 
 var anyHandler = func(c *gin.Context) {
 	another := c.Request.Clone(c.Request.Context())
@@ -70,7 +54,6 @@ func main() {
 	logs.CtxInfo(ctx, "BuildTime:%s", BuildTime)
 	// setup routes
 	r := gin.New()
-	r.Use(LoggerMiddleware())
 	r.NoRoute(anyHandler)
 
 	portInt := int64(80)
