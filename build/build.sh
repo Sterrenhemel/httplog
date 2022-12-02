@@ -71,7 +71,7 @@ do
 #  echo $SRC_MAIN_DIR
 #  echo $OUTPUT_MAIN
   echo "building $SRC_MAIN_DIR to $OUTPUT_MAIN"
-  cd ${SRC_DIR} && env GOOS=${TARGET_OS} GOARCH=${TARGET_ARCH} go build -trimpath -o ${OUTPUT_MAIN} ${SRC_MAIN_DIR}
+  cd ${SRC_DIR} && env GOOS=${TARGET_OS} GOARCH=${TARGET_ARCH} CGO_ENABLED=0 go build -trimpath -o ${OUTPUT_MAIN} ${SRC_MAIN_DIR}
   chmod 777 ${OUTPUT_MAIN}
 done
 
