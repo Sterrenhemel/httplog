@@ -45,8 +45,7 @@ else
 fi
 
 # 
-mkdir -p $OUTPUT_DIR/bin $OUTPUT_DIR/configs
-cp ${CONFIG_DIR}/* $OUTPUT_DIR/configs/
+mkdir -p $OUTPUT_DIR/bin
 
 SRC_BUILD_DIR=()
 TARGET_BUILD_LIST=()
