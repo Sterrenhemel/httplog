@@ -45,13 +45,13 @@ func main() {
 	r.Use(LoggerMiddleware())
 	r.NoRoute(anyHandler)
 
-	portInt := int64(8080)
+	portInt := int64(80)
 	port := os.Getenv("PORT")
 	if port != "" {
 		var err error
 		portInt, err = strconv.ParseInt(port, 10, 64)
 		if err != nil {
-			portInt = 8080
+			portInt = 80
 		}
 	}
 
