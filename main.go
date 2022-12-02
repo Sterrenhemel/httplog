@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/Sterrenhemel/common/env"
 	"github.com/Sterrenhemel/common/logs"
 	"github.com/Sterrenhemel/common/tracex"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"net/http/httputil"
 	"net/url"
 	"os"
@@ -51,6 +53,8 @@ func main() {
 	logs.CtxInfo(ctx, "BuildTime:%s", BuildTime)
 	// setup routes
 	r := gin.New()
+	r.Use(otelgin.Middleware(env.ServiceName()))
+
 	r.NoRoute(anyHandler)
 
 	portInt := int64(80)

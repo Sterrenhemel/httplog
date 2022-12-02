@@ -3,20 +3,17 @@ module github.com/Sterrenhemel/httplog
 go 1.18
 
 require (
-	github.com/MadAppGang/httplog v1.2.1
+	github.com/Sterrenhemel/common/env v0.0.0-20221115064921-188c6abcfd5d
 	github.com/Sterrenhemel/common/logs v0.0.0-20221128151732-5bd77b6dca7a
 	github.com/Sterrenhemel/common/tracex v0.0.0-20221115064921-188c6abcfd5d
-	github.com/elazarl/goproxy v0.0.0-20221015165544-a0805db90819
 	github.com/gin-gonic/gin v1.8.1
+	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.36.4
 	moul.io/http2curl v1.0.0
 )
 
 require (
-	github.com/Sterrenhemel/common/env v0.0.0-20221115064921-188c6abcfd5d // indirect
 	github.com/Sterrenhemel/common/net2 v0.0.0-20220415112415-9bcdcf3d2906 // indirect
-	github.com/TylerBrock/colorjson v0.0.0-20200706003622-8a50f05110d2 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
-	github.com/fatih/color v1.13.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -28,7 +25,6 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.13.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
