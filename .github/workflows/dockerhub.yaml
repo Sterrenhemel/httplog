@@ -50,6 +50,8 @@ jobs:
           context: .
           file: deploy/docker/ci/Dockerfile
           platforms: linux/amd64
+          secrets: |
+            GO_PRIVATE_TOKEN=${{ secrets.GO_PRIVATE_TOKEN }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           # platforms: linux/amd64,linux/arm64
