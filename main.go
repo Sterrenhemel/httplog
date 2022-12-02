@@ -27,10 +27,11 @@ func LoggerMiddleware() gin.HandlerFunc {
 
 var anyHandler = func(c *gin.Context) {
 	curlCommand, err := http2curl.GetCurlCommand(c.Request)
+	ctx := c.Request.Context()
 	if err != nil {
-		logs.CtxErrorw(c.Request.Context(), "request error", "err", err)
+		logs.CtxErrorw(ctx, "request error", "err", err)
 	}
-	logs.CtxInfow(c.Request.Context(), "curl", "curl", curlCommand.String())
+	logs.CtxInfow(ctx, "curl", "curl", curlCommand.String())
 	c.JSON(200, nil)
 }
 
