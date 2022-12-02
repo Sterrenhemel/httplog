@@ -6,6 +6,7 @@ require (
 	github.com/MadAppGang/httplog v1.2.1
 	github.com/Sterrenhemel/common/logs v0.0.0-20221128151732-5bd77b6dca7a
 	github.com/Sterrenhemel/common/tracex v0.0.0-20221115064921-188c6abcfd5d
+	github.com/elazarl/goproxy v0.0.0-20221015165544-a0805db90819
 	github.com/gin-gonic/gin v1.8.1
 	moul.io/http2curl v1.0.0
 )

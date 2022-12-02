@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/MadAppGang/httplog"
 	"github.com/Sterrenhemel/common/logs"
 	"github.com/Sterrenhemel/common/tracex"
 	"github.com/gin-gonic/gin"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"strconv"
 
@@ -29,17 +32,38 @@ func LoggerMiddleware() gin.HandlerFunc {
 }
 
 var anyHandler = func(c *gin.Context) {
-	curlCommand, err := http2curl.GetCurlCommand(c.Request)
-	ctx := c.Request.Context()
+	another := c.Request.Clone(c.Request.Context())
+
+	curlCommand, err := http2curl.GetCurlCommand(another)
+	another.Host = "es-cluster-es-eck-elasticsearch-es-http.es-cluster-default.svc.cluster.local"
+	another.URL = c.Request.URL
+	another.URL.Host = another.Host
+	logs.CtxInfow(c.Request.Context(), "curl", "curl", curlCommand.String())
+
+	remote, err := url.Parse("http://es-cluster-es-eck-elasticsearch-es-http.es-cluster-default.svc.cluster.local")
 	if err != nil {
-		logs.CtxErrorw(ctx, "request error", "err", err)
+		panic(err)
 	}
-	logs.CtxInfow(ctx, "curl", "curl", curlCommand.String())
-	c.JSON(200, nil)
+
+	proxy := httputil.NewSingleHostReverseProxy(remote)
+	//Define the director func
+	//This is a good place to log, for example
+	proxy.Director = func(req *http.Request) {
+		req.Header = c.Request.Header
+		req.Host = remote.Host
+		req.URL.Scheme = remote.Scheme
+		req.URL.Host = remote.Host
+		req.URL.Path = c.Request.URL.Path
+	}
+
+	proxy.ServeHTTP(c.Writer, c.Request)
+
 }
 
 func main() {
 	tracex.Init()
+	ctx := context.Background()
+	defer tracex.ShutDown(ctx)
 	// setup routes
 	r := gin.New()
 	r.Use(LoggerMiddleware())
