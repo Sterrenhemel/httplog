@@ -66,11 +66,11 @@ var subjectsHandler = func(c *gin.Context) {
 	ctx := c.Request.Context()
 	logs.CtxInfow(ctx, "curl", "curl", curlCommand.String())
 
-	remote, err := url.Parse("http://redpanda-cluster-0.redpanda-cluster.redpanda-cluster-default.svc.cluster.local:8081")
-	if err != nil {
-		logs.CtxErrorw(ctx, "url.Parse", "err", err)
-		return
-	}
+	//remote, err := url.Parse("http://redpanda-cluster-0.redpanda-cluster.redpanda-cluster-default.svc.cluster.local:8081")
+	//if err != nil {
+	//	logs.CtxErrorw(ctx, "url.Parse", "err", err)
+	//	return
+	//}
 
 	// /subjects/tidb_v_user-value?normalize=false&deleted=true
 	// /schemas/ids/1?fetchMaxId=false&subject=tidb_v_user-value
@@ -116,18 +116,38 @@ var subjectsHandler = func(c *gin.Context) {
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(newBody))
 	c.Request.Header.Set("Content-Length", strconv.Itoa(len(newBody)))
 
-	proxy := httputil.NewSingleHostReverseProxy(remote)
+	req := &http.Request{
+		Header: c.Request.Header,
+		Host:   c.Request.Host,
+		URL:    c.Request.URL,
+	}
+	rawResp, err := otelhttp.DefaultClient.Do(req)
+	if err != nil {
+		logs.CtxErrorw(ctx, "json.Marshal", "err", err)
+		return
+	}
+	respBody, err := io.ReadAll(rawResp.Body)
+	if err != nil {
+		logs.CtxErrorw(ctx, "io.ReadAll", "err", err)
+		return
+	}
+	_, err = c.Writer.Write(respBody)
+	if err != nil {
+		logs.CtxErrorw(ctx, "io.Write", "err", err)
+		return
+	}
+	//proxy := httputil.NewSingleHostReverseProxy(remote)
 	//Define the director func
 	//This is a good place to log, for example
-	proxy.Director = func(req *http.Request) {
-		req.Header = c.Request.Header
-		req.Host = remote.Host
-		req.URL.Scheme = remote.Scheme
-		req.URL.Host = remote.Host
-		req.URL.Path = c.Request.URL.Path
-	}
+	//proxy.Director = func(req *http.Request) {
+	//	req.Header = c.Request.Header
+	//	req.Host = remote.Host
+	//	req.URL.Scheme = remote.Scheme
+	//	req.URL.Host = remote.Host
+	//	req.URL.Path = c.Request.URL.Path
+	//}
 
-	proxy.ServeHTTP(c.Writer, c.Request)
+	//proxy.ServeHTTP(c.Writer, c.Request)
 }
 
 var BuildTime = ""
