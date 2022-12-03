@@ -59,6 +59,8 @@ var anyHandler = func(c *gin.Context) {
 var subjectsHandler = func(c *gin.Context) {
 	curlCommand, err := http2curl.GetCurlCommand(c.Request)
 	//c.Request.Host = "redpanda-cluster-0.redpanda-cluster.redpanda-cluster-default.svc.cluster.local:8081"
+	c.Request.URL.Host = "redpanda-cluster-0.redpanda-cluster.redpanda-cluster-default.svc.cluster.local:8081"
+	c.Request.URL.Scheme = "http"
 	logs.CtxInfow(c.Request.Context(), "curl", "curl", curlCommand.String())
 
 	remote, err := url.Parse("http://redpanda-cluster-0.redpanda-cluster.redpanda-cluster-default.svc.cluster.local:8081")
