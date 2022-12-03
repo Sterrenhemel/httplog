@@ -58,6 +58,25 @@ var anyHandler = func(c *gin.Context) {
 
 }
 
+func getSchema(ctx context.Context, subject string) (string, error) {
+	resp, err := otelhttp.Get(ctx,
+		fmt.Sprintf("http://redpanda-cluster-0.redpanda-cluster.redpanda-cluster-default.svc.cluster.local:8081/subjects/%s/versions/latest", subject),
+	)
+	if err != nil {
+		logs.CtxErrorw(ctx, "http DefaultClient Get", "err", err)
+		return "", err
+	}
+	respSchema, err := io.ReadAll(resp.Body)
+	if err != nil {
+		logs.CtxErrorw(ctx, "http io.ReadAll", "err", err)
+		return "", err
+	}
+	schemaStr := gjson.GetBytes(respSchema, "schema").String()
+	logs.CtxInfow(ctx, "respSchema", "schema", schemaStr)
+	//schemaStr := "{\"type\":\"record\",\"name\":\"user\",\"namespace\":\"default.v\",\"fields\":[{\"name\":\"biz_id\",\"type\":{\"type\":\"long\",\"connect.parameters\":{\"tidb_type\":\"BIGINT UNSIGNED\"}}},{\"name\":\"user_id\",\"type\":{\"type\":\"long\",\"connect.parameters\":{\"tidb_type\":\"BIGINT UNSIGNED\"}}},{\"name\":\"user_name\",\"type\":{\"type\":\"string\",\"connect.parameters\":{\"tidb_type\":\"TEXT\"}}},{\"default\":\"\",\"name\":\"avatar\",\"type\":{\"type\":\"string\",\"connect.parameters\":{\"tidb_type\":\"TEXT\"}}},{\"default\":\"\",\"name\":\"description\",\"type\":{\"type\":\"string\",\"connect.parameters\":{\"tidb_type\":\"TEXT\"}}},{\"default\":0,\"name\":\"gender\",\"type\":{\"type\":\"int\",\"connect.parameters\":{\"tidb_type\":\"INT\"}}},{\"default\":\"\",\"name\":\"phone_number\",\"type\":{\"type\":\"string\",\"connect.parameters\":{\"tidb_type\":\"TEXT\"}}},{\"default\":\"CURRENT_TIMESTAMP\",\"name\":\"ctime\",\"type\":{\"type\":\"string\",\"connect.parameters\":{\"tidb_type\":\"TIMESTAMP\"}}},{\"default\":\"CURRENT_TIMESTAMP\",\"name\":\"mtime\",\"type\":{\"type\":\"string\",\"connect.parameters\":{\"tidb_type\":\"TIMESTAMP\"}}},{\"default\":\"CURRENT_TIMESTAMP\",\"name\":\"btime\",\"type\":{\"type\":\"string\",\"connect.parameters\":{\"tidb_type\":\"TIMESTAMP\"}}}]}"
+	return schemaStr, nil
+}
+
 var subjectsHandler = func(c *gin.Context) {
 	curlCommand, err := http2curl.GetCurlCommand(c.Request)
 	//c.Request.Host = "redpanda-cluster-0.redpanda-cluster.redpanda-cluster-default.svc.cluster.local:8081"
@@ -79,20 +98,6 @@ var subjectsHandler = func(c *gin.Context) {
 
 	subject := c.Param("subjects")
 
-	resp, err := otelhttp.Get(ctx,
-		fmt.Sprintf("http://redpanda-cluster-0.redpanda-cluster.redpanda-cluster-default.svc.cluster.local:8081/subjects/%s/versions/latest", subject),
-	)
-	if err != nil {
-		logs.CtxErrorw(ctx, "http DefaultClient Get", "err", err)
-		return
-	}
-	respSchema, err := io.ReadAll(resp.Body)
-	if err != nil {
-		logs.CtxErrorw(ctx, "http io.ReadAll", "err", err)
-		return
-	}
-	schemaStr := gjson.GetBytes(respSchema, "schema").String()
-	logs.CtxInfow(ctx, "respSchema", "schema", schemaStr)
 	//schemaBytes, err := io.ReadAll(base64.NewDecoder(base64.StdEncoding, strings.NewReader(string(respSchema))))
 	//if err != nil {
 	//	logs.CtxErrorw(ctx, "http io.ReadAll", "err", err)
@@ -112,7 +117,11 @@ var subjectsHandler = func(c *gin.Context) {
 		return
 	}
 
-	postSchema.Schema = schemaStr
+	postSchema.Schema, err = getSchema(ctx, subject)
+	if err != nil {
+		logs.CtxErrorw(ctx, "getSchema", "err", err)
+		return
+	}
 
 	newBody, err := json.Marshal(postSchema)
 	if err != nil {
@@ -123,18 +132,20 @@ var subjectsHandler = func(c *gin.Context) {
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(newBody))
 	c.Request.Header.Set("Content-Length", strconv.Itoa(len(newBody)))
 
-	url1, err := url.ParseRequestURI("http://redpanda-cluster-0.redpanda-cluster.redpanda-cluster-default.svc.cluster.local:8081")
+	url1, err := url.ParseRequestURI(c.Request.RequestURI)
 	if err != nil {
 		logs.CtxErrorw(ctx, "url.ParseRequestURI", "err", err)
 		return
 	}
-	url1.Path = c.FullPath()
+	url1.Scheme = "http"
+	url1.Host = "redpanda-cluster-0.redpanda-cluster.redpanda-cluster-default.svc.cluster.local:8081"
 
 	req := &http.Request{
 		Header: c.Request.Header,
 		Host:   c.Request.Host,
 		URL:    url1,
 		Body:   io.NopCloser(bytes.NewBuffer(newBody)),
+		Method: http.MethodPost,
 	}
 	curlCommand, err = http2curl.GetCurlCommand(req)
 	logs.CtxInfow(ctx, "curl", "curl", curlCommand.String())
