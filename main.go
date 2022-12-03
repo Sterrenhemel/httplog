@@ -92,7 +92,7 @@ var subjectsHandler = func(c *gin.Context) {
 	}
 
 	var postSchema PostSchema
-	err = json.Unmarshal([]byte(body), postSchema)
+	err = json.Unmarshal([]byte(body), &postSchema)
 	if err != nil {
 		c.Error(err)
 		return
