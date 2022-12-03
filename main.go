@@ -92,6 +92,7 @@ var subjectsHandler = func(c *gin.Context) {
 		logs.CtxErrorw(ctx, "http io.ReadAll", "err", err)
 		return
 	}
+	logs.CtxInfow(ctx, "respSchema", "schema", string(respSchema))
 	schemaBytes, err := io.ReadAll(base64.NewDecoder(base64.StdEncoding, strings.NewReader(string(respSchema))))
 	if err != nil {
 		logs.CtxErrorw(ctx, "http io.ReadAll", "err", err)
