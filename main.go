@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/Sterrenhemel/common/env"
@@ -19,7 +18,6 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-	"strings"
 )
 
 type PostSchema struct {
@@ -93,12 +91,12 @@ var subjectsHandler = func(c *gin.Context) {
 		return
 	}
 	logs.CtxInfow(ctx, "respSchema", "schema", string(respSchema))
-	schemaBytes, err := io.ReadAll(base64.NewDecoder(base64.StdEncoding, strings.NewReader(string(respSchema))))
-	if err != nil {
-		logs.CtxErrorw(ctx, "http io.ReadAll", "err", err)
-		return
-	}
-	logs.CtxInfow(c.Request.Context(), "get schema", "schema", string(schemaBytes), "subject", subject)
+	//schemaBytes, err := io.ReadAll(base64.NewDecoder(base64.StdEncoding, strings.NewReader(string(respSchema))))
+	//if err != nil {
+	//	logs.CtxErrorw(ctx, "http io.ReadAll", "err", err)
+	//	return
+	//}
+	//logs.CtxInfow(ctx, "get schema", "schema", string(schemaBytes), "subject", subject)
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		logs.CtxErrorw(ctx, "http io.ReadAll", "err", err)
@@ -112,7 +110,7 @@ var subjectsHandler = func(c *gin.Context) {
 		return
 	}
 
-	postSchema.Schema = string(schemaBytes)
+	postSchema.Schema = string(respSchema)
 
 	newBody, err := json.Marshal(postSchema)
 	if err != nil {
