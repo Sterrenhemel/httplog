@@ -123,10 +123,17 @@ var subjectsHandler = func(c *gin.Context) {
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(newBody))
 	c.Request.Header.Set("Content-Length", strconv.Itoa(len(newBody)))
 
+	url1, err := url.ParseRequestURI("http://redpanda-cluster-0.redpanda-cluster.redpanda-cluster-default.svc.cluster.local:8081")
+	if err != nil {
+		logs.CtxErrorw(ctx, "url.ParseRequestURI", "err", err)
+		return
+	}
+	url1.Path = c.FullPath()
+
 	req := &http.Request{
 		Header: c.Request.Header,
 		Host:   c.Request.Host,
-		URL:    c.Request.URL,
+		URL:    url1,
 		Body:   io.NopCloser(bytes.NewBuffer(newBody)),
 	}
 	curlCommand, err = http2curl.GetCurlCommand(req)
