@@ -127,6 +127,8 @@ var subjectsHandler = func(c *gin.Context) {
 		URL:    c.Request.URL,
 		Body:   io.NopCloser(bytes.NewBuffer(newBody)),
 	}
+	curlCommand, err = http2curl.GetCurlCommand(req)
+	logs.CtxInfow(ctx, "curl", "curl", curlCommand.String())
 	rawResp, err := otelhttp.DefaultClient.Do(req)
 	if err != nil {
 		logs.CtxErrorw(ctx, "json.Marshal", "err", err)
