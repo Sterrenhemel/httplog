@@ -9,6 +9,7 @@ import (
 	"github.com/Sterrenhemel/common/logs"
 	"github.com/Sterrenhemel/common/tracex"
 	"github.com/gin-gonic/gin"
+	"github.com/tidwall/gjson"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"io"
@@ -22,12 +23,12 @@ import (
 
 type PostSchema struct {
 	Schema     string `json:"schema"`
-	SchemaType string `json:"schemaType"`
+	SchemaType string `json:"schemaType,omitempty"`
 	References []struct {
-		Name    string `json:"name"`
-		Subject string `json:"subject"`
-		Version int    `json:"version"`
-	} `json:"references"`
+		Name    string `json:"name,omitempty"`
+		Subject string `json:"subject,omitempty"`
+		Version int    `json:"version,omitempty"`
+	} `json:"references,omitempty"`
 }
 
 var anyHandler = func(c *gin.Context) {
@@ -90,7 +91,8 @@ var subjectsHandler = func(c *gin.Context) {
 		logs.CtxErrorw(ctx, "http io.ReadAll", "err", err)
 		return
 	}
-	logs.CtxInfow(ctx, "respSchema", "schema", string(respSchema))
+	schemaStr := gjson.GetBytes(respSchema, "schema").String()
+	logs.CtxInfow(ctx, "respSchema", "schema", schemaStr)
 	//schemaBytes, err := io.ReadAll(base64.NewDecoder(base64.StdEncoding, strings.NewReader(string(respSchema))))
 	//if err != nil {
 	//	logs.CtxErrorw(ctx, "http io.ReadAll", "err", err)
@@ -110,7 +112,7 @@ var subjectsHandler = func(c *gin.Context) {
 		return
 	}
 
-	postSchema.Schema = string(respSchema)
+	postSchema.Schema = schemaStr
 
 	newBody, err := json.Marshal(postSchema)
 	if err != nil {
