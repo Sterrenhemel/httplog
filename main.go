@@ -120,6 +120,7 @@ var subjectsHandler = func(c *gin.Context) {
 		Header: c.Request.Header,
 		Host:   c.Request.Host,
 		URL:    c.Request.URL,
+		Body:   io.NopCloser(bytes.NewBuffer(newBody)),
 	}
 	rawResp, err := otelhttp.DefaultClient.Do(req)
 	if err != nil {
