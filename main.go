@@ -61,11 +61,13 @@ var subjectsHandler = func(c *gin.Context) {
 	//c.Request.Host = "redpanda-cluster-0.redpanda-cluster.redpanda-cluster-default.svc.cluster.local:8081"
 	c.Request.URL.Host = "redpanda-cluster-0.redpanda-cluster.redpanda-cluster-default.svc.cluster.local:8081"
 	c.Request.URL.Scheme = "http"
-	logs.CtxInfow(c.Request.Context(), "curl", "curl", curlCommand.String())
+
+	ctx := c.Request.Context()
+	logs.CtxInfow(ctx, "curl", "curl", curlCommand.String())
 
 	remote, err := url.Parse("http://redpanda-cluster-0.redpanda-cluster.redpanda-cluster-default.svc.cluster.local:8081")
 	if err != nil {
-		c.Error(err)
+		logs.CtxErrorw(ctx, "url.Parse", "err", err)
 		return
 	}
 
@@ -77,26 +79,26 @@ var subjectsHandler = func(c *gin.Context) {
 
 	resp, err := http.DefaultClient.Get(fmt.Sprintf("/subjects/%s/versions/latest", subject))
 	if err != nil {
-		c.Error(err)
+		logs.CtxErrorw(ctx, "http DefaultClient Get", "err", err)
 		return
 	}
 	respSchema, err := io.ReadAll(resp.Body)
 	if err != nil {
-		c.Error(err)
+		logs.CtxErrorw(ctx, "http io.ReadAll", "err", err)
 		return
 	}
 
 	logs.CtxInfow(c.Request.Context(), "get schema", "schema", respSchema, "subject", subject)
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		c.Error(err)
+		logs.CtxErrorw(ctx, "http io.ReadAll", "err", err)
 		return
 	}
 
 	var postSchema PostSchema
 	err = json.Unmarshal([]byte(body), &postSchema)
 	if err != nil {
-		c.Error(err)
+		logs.CtxErrorw(ctx, "json.Unmarshal", "err", err)
 		return
 	}
 
@@ -104,7 +106,7 @@ var subjectsHandler = func(c *gin.Context) {
 
 	newBody, err := json.Marshal(postSchema)
 	if err != nil {
-		c.Error(err)
+		logs.CtxErrorw(ctx, "json.Marshal", "err", err)
 		return
 	}
 
