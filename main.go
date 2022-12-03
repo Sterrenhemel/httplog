@@ -141,6 +141,7 @@ var subjectsHandler = func(c *gin.Context) {
 		logs.CtxErrorw(ctx, "io.ReadAll", "err", err)
 		return
 	}
+	logs.CtxInfow(ctx, "post resp", "respBody", string(respBody))
 	_, err = c.Writer.Write(respBody)
 	if err != nil {
 		logs.CtxErrorw(ctx, "io.Write", "err", err)
