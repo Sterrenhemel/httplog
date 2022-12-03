@@ -19,6 +19,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type PostSchema struct {
@@ -86,13 +87,17 @@ var subjectsHandler = func(c *gin.Context) {
 		logs.CtxErrorw(ctx, "http DefaultClient Get", "err", err)
 		return
 	}
-	respSchema, err := io.ReadAll(base64.NewDecoder(base64.StdEncoding, resp.Body))
+	respSchema, err := io.ReadAll(resp.Body)
 	if err != nil {
 		logs.CtxErrorw(ctx, "http io.ReadAll", "err", err)
 		return
 	}
-
-	logs.CtxInfow(c.Request.Context(), "get schema", "schema", respSchema, "subject", subject)
+	schemaBytes, err := io.ReadAll(base64.NewDecoder(base64.StdEncoding, strings.NewReader(string(respSchema))))
+	if err != nil {
+		logs.CtxErrorw(ctx, "http io.ReadAll", "err", err)
+		return
+	}
+	logs.CtxInfow(c.Request.Context(), "get schema", "schema", string(schemaBytes), "subject", subject)
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		logs.CtxErrorw(ctx, "http io.ReadAll", "err", err)
@@ -106,7 +111,7 @@ var subjectsHandler = func(c *gin.Context) {
 		return
 	}
 
-	postSchema.Schema = string(respSchema)
+	postSchema.Schema = string(schemaBytes)
 
 	newBody, err := json.Marshal(postSchema)
 	if err != nil {
