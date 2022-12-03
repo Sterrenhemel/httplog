@@ -17,7 +17,6 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-	"strings"
 )
 
 type PostSchema struct {
@@ -41,49 +40,6 @@ var anyHandler = func(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	if c.Request.Method == http.MethodPost &&
-		strings.HasPrefix(c.Request.URL.Path, "/subjects/") &&
-		strings.HasSuffix(c.Request.URL.Path, "-value") {
-		// /schemas/ids/1?fetchMaxId=false&subject=tidb_v_user-value
-		// /subjects/{subjects}/versions/latest
-
-		subject := c.Query("subject")
-
-		resp, err := http.DefaultClient.Get(fmt.Sprintf("/subjects/%s/versions/latest", subject))
-		if err != nil {
-			c.Error(err)
-			return
-		}
-		respSchema, err := io.ReadAll(resp.Body)
-		if err != nil {
-			c.Error(err)
-			return
-		}
-
-		logs.CtxInfow(c.Request.Context(), "get schema", "schema", respSchema, "subject", subject)
-		body, err := io.ReadAll(c.Request.Body)
-		if err != nil {
-			c.Error(err)
-			return
-		}
-
-		var postSchema PostSchema
-		err = json.Unmarshal([]byte(body), postSchema)
-		if err != nil {
-			c.Error(err)
-			return
-		}
-
-		postSchema.Schema = string(respSchema)
-
-		newBody, err := json.Marshal(postSchema)
-		if err != nil {
-			c.Error(err)
-			return
-		}
-
-		c.Request.Body = io.NopCloser(bytes.NewBuffer(newBody))
-	}
 
 	proxy := httputil.NewSingleHostReverseProxy(remote)
 	//Define the director func
@@ -100,6 +56,72 @@ var anyHandler = func(c *gin.Context) {
 
 }
 
+var subjectsHandler = func(c *gin.Context) {
+	curlCommand, err := http2curl.GetCurlCommand(c.Request)
+	//c.Request.Host = "redpanda-cluster-0.redpanda-cluster.redpanda-cluster-default.svc.cluster.local:8081"
+	logs.CtxInfow(c.Request.Context(), "curl", "curl", curlCommand.String())
+
+	remote, err := url.Parse("http://redpanda-cluster-0.redpanda-cluster.redpanda-cluster-default.svc.cluster.local:8081")
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	// /subjects/tidb_v_user-value?normalize=false&deleted=true
+	// /schemas/ids/1?fetchMaxId=false&subject=tidb_v_user-value
+	// /subjects/{subjects}/versions/latest
+
+	subject := c.Param("subjects")
+
+	resp, err := http.DefaultClient.Get(fmt.Sprintf("/subjects/%s/versions/latest", subject))
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	respSchema, err := io.ReadAll(resp.Body)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	logs.CtxInfow(c.Request.Context(), "get schema", "schema", respSchema, "subject", subject)
+	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	var postSchema PostSchema
+	err = json.Unmarshal([]byte(body), postSchema)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	postSchema.Schema = string(respSchema)
+
+	newBody, err := json.Marshal(postSchema)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(newBody))
+
+	proxy := httputil.NewSingleHostReverseProxy(remote)
+	//Define the director func
+	//This is a good place to log, for example
+	proxy.Director = func(req *http.Request) {
+		req.Header = c.Request.Header
+		req.Host = remote.Host
+		req.URL.Scheme = remote.Scheme
+		req.URL.Host = remote.Host
+		req.URL.Path = c.Request.URL.Path
+	}
+
+	proxy.ServeHTTP(c.Writer, c.Request)
+}
+
 var BuildTime = ""
 
 func main() {
@@ -111,7 +133,7 @@ func main() {
 	// setup routes
 	r := gin.New()
 	r.Use(otelgin.Middleware(env.ServiceName()))
-
+	r.POST("/subjects/:subjects", subjectsHandler)
 	r.NoRoute(anyHandler)
 
 	portInt := int64(80)
