@@ -114,6 +114,7 @@ var subjectsHandler = func(c *gin.Context) {
 	}
 
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(newBody))
+	c.Request.Header.Set("Content-Length", strconv.Itoa(len(newBody)))
 
 	proxy := httputil.NewSingleHostReverseProxy(remote)
 	//Define the director func
