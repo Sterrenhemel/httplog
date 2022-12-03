@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/Sterrenhemel/common/env"
@@ -85,7 +86,7 @@ var subjectsHandler = func(c *gin.Context) {
 		logs.CtxErrorw(ctx, "http DefaultClient Get", "err", err)
 		return
 	}
-	respSchema, err := io.ReadAll(resp.Body)
+	respSchema, err := io.ReadAll(base64.NewDecoder(base64.StdEncoding, resp.Body))
 	if err != nil {
 		logs.CtxErrorw(ctx, "http io.ReadAll", "err", err)
 		return

@@ -7,6 +7,7 @@ require (
 	github.com/Sterrenhemel/common/logs v0.0.0-20221128151732-5bd77b6dca7a
 	github.com/Sterrenhemel/common/tracex v0.0.0-20221115064921-188c6abcfd5d
 	github.com/gin-gonic/gin v1.8.1
+	github.com/stretchr/testify v1.8.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.36.4
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.36.4
 	moul.io/http2curl v1.0.0
@@ -15,6 +16,7 @@ require (
 require (
 	github.com/Sterrenhemel/common/net2 v0.0.0-20220415112415-9bcdcf3d2906 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
@@ -31,6 +33,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/smartystreets/goconvey v1.7.2 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	github.com/uptrace/opentelemetry-go-extra/otelutil v0.1.17 // indirect
@@ -61,4 +64,5 @@ require (
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0-20170531160350-a96e63847dc3 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
