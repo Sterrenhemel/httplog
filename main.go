@@ -66,7 +66,6 @@ var anyHandler = func(c *gin.Context) {
 			c.Error(err)
 			return
 		}
-		c.Request.Body = io.NopCloser(bytes.NewBuffer(body))
 
 		var postSchema PostSchema
 		err = json.Unmarshal([]byte(body), postSchema)
@@ -76,6 +75,14 @@ var anyHandler = func(c *gin.Context) {
 		}
 
 		postSchema.Schema = string(respSchema)
+
+		newBody, err := json.Marshal(postSchema)
+		if err != nil {
+			c.Error(err)
+			return
+		}
+
+		c.Request.Body = io.NopCloser(bytes.NewBuffer(newBody))
 	}
 
 	proxy := httputil.NewSingleHostReverseProxy(remote)
