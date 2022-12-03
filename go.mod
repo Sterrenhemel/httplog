@@ -8,12 +8,14 @@ require (
 	github.com/Sterrenhemel/common/tracex v0.0.0-20221115064921-188c6abcfd5d
 	github.com/gin-gonic/gin v1.8.1
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.36.4
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.36.4
 	moul.io/http2curl v1.0.0
 )
 
 require (
 	github.com/Sterrenhemel/common/net2 v0.0.0-20220415112415-9bcdcf3d2906 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
+	github.com/felixge/httpsnoop v1.0.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect

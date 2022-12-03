@@ -10,6 +10,7 @@ import (
 	"github.com/Sterrenhemel/common/tracex"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"io"
 	"moul.io/http2curl"
 	"net/http"
@@ -77,7 +78,9 @@ var subjectsHandler = func(c *gin.Context) {
 
 	subject := c.Param("subjects")
 
-	resp, err := http.DefaultClient.Get(fmt.Sprintf("/subjects/%s/versions/latest", subject))
+	resp, err := otelhttp.Get(ctx,
+		fmt.Sprintf("http://redpanda-cluster-0.redpanda-cluster.redpanda-cluster-default.svc.cluster.local:8081/subjects/%s/versions/latest", subject),
+	)
 	if err != nil {
 		logs.CtxErrorw(ctx, "http DefaultClient Get", "err", err)
 		return
